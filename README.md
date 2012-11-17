@@ -16,13 +16,21 @@ The library listens to the microphone input of your computer and sends recording
 STT(PApplet, boolean) constructor takes the instance of PApplet (usually this) and an optional boolean value which is false by default. If you set it to true all recordings will be kept in the data folder.
 
 **begin()** starts a record until end() is called
+
 **disableAutoRecord()** disables automatic records
-**disableAutoThreshold()** disables the analysis of the environmental volume after STT initialized
+
+**disableAutoThreshold()** disables the analysis of the 
+environmental volume after STT initialized
 **enableDebug()** enables console output with relevant information about the transcription process.
+
 **enableAutoRecord()** automatically records if the given volume threshold is reached
+
 **enableAutoThreshold()** enables the analysis of the environmental volume after STT initialized
+
 **end()** ends a record and starts transcription process
+
 **setLanguage(String)** en, de, fr, etc. If the language is not supported it will automatically fall back to English.
+
 **setThreshold(float)** sets the threshold that is used for speech recognition. If the input volume goes above the threshold it will be used for recognition.
 
 
