@@ -21,6 +21,7 @@ STT(PApplet, boolean) constructor takes the instance of PApplet (usually this) a
 
 **disableAutoThreshold()** disables the analysis of the 
 environmental volume after STT initialized
+
 **enableDebug()** enables console output with relevant information about the transcription process.
 
 **enableAutoRecord()** automatically records if the given volume threshold is reached
