@@ -1,5 +1,7 @@
 # SPEECH TO TEXT LIBRARY FOR PROCESSING
 
+http://stt.getflourish.com
+
 **Introduction**
 
 Speech recognition library based on Google’s web service that enables speech input on HTML5 input fields in Google Chrome.
@@ -44,3 +46,5 @@ The library is based on some thoughts by Mike Pultz who wrote an article that sh
 Email me or follow me on Twitter. I’m a designer and I’m aware of bugs, errors and bad ways of coding. Anyway, as long as it works for me, I’m happy to share what I’ve got. Feel free to make any changes to the code.
 
 Florian Schulz, June 2011
+
+www.florianschulz.info
