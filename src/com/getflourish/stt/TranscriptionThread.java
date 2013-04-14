@@ -35,6 +35,7 @@ public class TranscriptionThread extends Thread {
 	public TranscriptionThread(String lang) {
 		this.lang = lang;
 		running = false;
+		this.setName("TranscriptionThread");
 	}
 
 	public void startTranscription(String _record) {
@@ -43,7 +44,7 @@ public class TranscriptionThread extends Thread {
 	}
 
 	public void run() {
-		while (true) {
+		while (!Thread.currentThread().isInterrupted()) {
 			if (running) {
 				transcribe(this.record);
 				running = false;
@@ -51,6 +52,7 @@ public class TranscriptionThread extends Thread {
 				try {
 					sleep(500);
 				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 				}
 			}
 		}

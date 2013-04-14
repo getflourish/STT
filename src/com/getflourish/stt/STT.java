@@ -11,9 +11,7 @@ import java.util.Properties;
 
 import processing.core.PApplet;
 
-import ddf.minim.AudioInput;
-import ddf.minim.AudioRecorder;
-import ddf.minim.Minim;
+import ddf.minim.*;
 
 import javaFlacEncoder.*;
 
@@ -80,7 +78,7 @@ public class STT  {
 	 * @param _p instance of PApplet
 	 */
 	public STT (PApplet _p) {
-		this(_p, true);
+		this(_p, false);
 	}
 	/**
 	 * @param _p instance of PApplet
@@ -90,6 +88,11 @@ public class STT  {
 		this.p = _p;
 		this.log = history;  
 		this.threads = new ArrayList<TranscriptionThread>();
+		this.minim = new Minim(p);
+		this.encoder = new FLAC_FileEncoder();		
+		// get a LineIn from Minim, default bit depth is 16
+		in = minim.getLineIn(Minim.MONO);
+		this.recorder = minim.createRecorder(in, path + fileName + fileCount + ".wav", true);
         disableAutoRecord(); 
 		this.listen();
 	}
@@ -99,6 +102,10 @@ public class STT  {
 		transcriptionThread.start();
         threads.add(transcriptionThread);
 		return transcriptionThread;
+	}
+	private void killTranscriptionThread (int i) {
+		threads.get(i).interrupt();
+		threads.remove(i);
 	}
 	private void analyzeEnv() {
 		if (!analyzing) {
@@ -195,7 +202,8 @@ public class STT  {
 				} else if (transcriptionEvent2 != null) {
                     dispatchTranscriptionEvent(transcriptionThread.getUtterance(), transcriptionThread.getConfidence(), transcriptionThread.getStatus());
 				}
-				threads.remove(i);
+				killTranscriptionThread(i);
+				
 			}
 
 			if (debug && !status.equals(lastStatus)) {
@@ -292,14 +300,14 @@ public class STT  {
 		    // the magic begins. save it. transcribe it.
     		if (timer.isFinished() && volume < threshold && recorder.isRecording() && recording) {
     			onSpeechFinish();
-    		} else if (timer.isFinished() && volume < threshold && !recorder.isRecording()){
+    		} else if (timer.isFinished() && volume < threshold) {
     			startListening();
     		}
 		}
 	}
 	private void initFileSystem ()
 	{
-		dataPath = p.dataPath("");
+		dataPath = p.dataPath("") + "/";
 		recordsPath = getDateTime() + "/";
 		if (log) {
 			path = dataPath + recordsPath;
@@ -312,29 +320,28 @@ public class STT  {
 			File datadir = new File(dataPath + "/");
 			datadir.mkdir();
 			
-			File recordsdir = new File(path);
-			recordsdir.mkdir();
+			if (log) {
+				File recordsdir = new File(path);
+				recordsdir.mkdir();
+			}
 
 		} catch (NullPointerException e) {
 			System.err.println("Could not read files in directory: " + path);
 		}
+		timer = new Timer(interval);
+		
+		// calls draw every frame
+		this.p.registerDraw(this);
+		this.p.registerDispose(this);
 	}
 	
 	private void listen() {
         addTranscriptionThread();
 		initFileSystem();
 		
-		// get a LineIn from Minim, default bit depth is 16
-		minim = new Minim(p);
-		in = minim.getLineIn(Minim.MONO);
-		
 		// listening repeats until something is heard
-		recorder = minim.createRecorder(in, path + fileName + fileCount + ".wav", true);
-		timer = new Timer(interval);
 		timer.start();
 		
-		// FLAC
-		encoder = new FLAC_FileEncoder();
 		
 		// setting up reflection method that is called in PApplet
 		try {
@@ -355,10 +362,6 @@ public class STT  {
 		}
 		
 		if (transcriptionEvent == null && transcriptionEvent2 == null) System.err.println("STT info: use transcribe(String word, float confidence, [int status]) in your main sketch to receive transcription events");
-		
-		// calls draw every frame
-		this.p.registerDraw(this);
-		this.p.registerDispose(this);
 	
 	}
 	private void onBegin () 
@@ -374,7 +377,7 @@ public class STT  {
 		recording = true;
         dispatchTranscriptionEvent(transcriptionThread.getUtterance(), transcriptionThread.getConfidence(), STT.RECORDING);
 	}
-	private void onSpeechFinish()
+	public void onSpeechFinish()
 	{
 		status = "Transcribing";
 		fired = false;
@@ -382,7 +385,7 @@ public class STT  {
 		recorder.save();
 		recording = false;
 		
-        dispatchTranscriptionEvent(transcriptionThread.getUtterance(), transcriptionThread.getConfidence(), STT.TRANSCRIBING);
+        dispatchTranscriptionEvent("", 0, STT.TRANSCRIBING);
 		
 		// Encode the wav to flac
 		String flac = path + fileName + fileCount + ".flac";
@@ -420,6 +423,7 @@ public class STT  {
 	{
 		recorder.endRecord();
 		recorder.save();
+		// recorder = null;
 		recorder = minim.createRecorder(in, path + fileName + fileCount + ".wav", true);
 		recorder.beginRecord();
 		timer.start();
@@ -430,8 +434,31 @@ public class STT  {
 		minim.stop();
 		p.stop();
 	}
-	private void transcribe(String _path) {
+	public void transcribe(String _path) {
         addTranscriptionThread().startTranscription(_path);
+	}
+	public void transcribeFile (String _path) {
+		status = "Transcribing";
+		
+		_path = path + "/" + _path;
+		// Encode the wav to flac
+		String flac = _path.substring(0, _path.length() - 4) + ".flac";
+		encoder.encode(new File(_path), new File(flac));
+		boolean exists = (new File(flac)).exists();
+		while(exists == false)
+		{	
+			exists = (new File(flac)).exists();		
+		}
+	
+		if (exists) {
+			 this.transcribe(flac);
+		} else {
+		    System.err.println("Could not transcribe. File was not encoded in time.");
+		}
+		
+		// new file for new speech
+		if (log) fileCount++;
+		
 	}
 	private void updateVolume() {
 	    volume = in.mix.level() * 1000;
