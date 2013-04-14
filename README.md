@@ -2,37 +2,37 @@
 
 **Introduction**
 
-I’ve been involved in a project about the German language that led to some research on speech recognition libraries. There are some good grammar-based libraries that can recognize given commands (Voce) but I’ve been looking for something that could be used for free dictation. Google Chrome already supports a HTML5 feature that enables speech recognition for input fields.
-
-I was really surprised how good it works for several languages and decided to make it available as an open source library for Processing.
+Speech recognition library based on Google’s web service that enables speech input on HTML5 input fields in Google Chrome.
 
 **The Library**
 
-The library listens to the microphone input of your computer and sends recordings of your voice to Google for further processing. If the transcription was successful, the transcribe method is called and you can do whatever you want with the result. You can find some more details in the very early JavaDoc.
+The library listens to the microphone input of your computer and sends recordings of your voice to Google for further processing. If the transcription was successful, the transcribe method is called and you can do whatever you want with the result.
 
 
 **Settings**
 
-STT(PApplet, boolean) constructor takes the instance of PApplet (usually this) and an optional boolean value which is false by default. If you set it to true all recordings will be kept in the data folder.
+STT(PApplet p, boolean history) constructor takes the instance of PApplet (usually this) and an optional boolean value which is false by default. If you set it to true all recordings will be kept in the data folder.
 
-**begin()** starts a record until end() is called
+**begin()** starts a recording until end() is called
 
-**disableAutoRecord()** disables automatic records
+**disableAutoRecord()** disables automatic recordings
 
 **disableAutoThreshold()** disables the analysis of the 
 environmental volume after STT initialized
 
 **enableDebug()** enables console output with relevant information about the transcription process.
 
-**enableAutoRecord()** automatically records if the given volume threshold is reached
+**enableAutoRecord()** analyzed the environment sound level and automatically records if anything louder than the average level is recognized
 
-**enableAutoThreshold()** enables the analysis of the environmental volume after STT initialized
+**enableAutoRecord(float threshold)** automatically records if the given volume threshold is reached
 
-**end()** ends a record and starts transcription process
+**enableAutoThreshold()** enables the analysis of the environmental sound level after STT initialized
 
-**setLanguage(String)** en, de, fr, etc. If the language is not supported it will automatically fall back to English.
+**end()** ends a recording and starts the transcription process
 
-**setThreshold(float)** sets the threshold that is used for speech recognition. If the input volume goes above the threshold it will be used for recognition.
+**setLanguage(String language)** en, de, fr, etc. If the language is not supported it will automatically fall back to English.
+
+**setThreshold(float value)** sets the threshold that is used for speech recognition. If the input volume goes above the threshold it will be used for recognition.
 
 
 **Credits**
